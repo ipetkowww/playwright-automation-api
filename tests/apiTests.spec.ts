@@ -1,15 +1,9 @@
 import { APIResponse, expect, test } from '@playwright/test';
 import { StatusCodes } from 'http-status-codes';
 
-test('Get API tags', async ({ request }) => {
-  const tagsResponse: APIResponse = await request.get('https://conduit-api.bondaracademy.com/api/tags');
-  expect(tagsResponse.status()).toBe(StatusCodes.OK);
+let authToken: string;
 
-  const responseBody: any = await tagsResponse.json();
-  expect(responseBody.tags[0]).toEqual('Test');
-});
-
-test("Create new article", async ({ request }) => {
+test.beforeAll(async ({ request }) => {
   const loginResponse: APIResponse = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
     data: {
       "user": {
@@ -21,8 +15,18 @@ test("Create new article", async ({ request }) => {
   expect(loginResponse.status()).toBe(StatusCodes.OK);
 
   const loginResponseBody: any = await loginResponse.json();
-  const authToken: string = loginResponseBody.user.token;
+  authToken = loginResponseBody.user.token;
+});
 
+test('Get API tags', async ({ request }) => {
+  const tagsResponse: APIResponse = await request.get('https://conduit-api.bondaracademy.com/api/tags');
+  expect(tagsResponse.status()).toBe(StatusCodes.OK);
+
+  const responseBody: any = await tagsResponse.json();
+  expect(responseBody.tags[0]).toEqual('Test');
+});
+
+test("Create new article", async ({ request }) => {
   const createdArticleResponse = await request.post('https://conduit-api.bondaracademy.com/api/articles/', {
     data: {
       "article": {
@@ -60,19 +64,6 @@ test("Create new article", async ({ request }) => {
 });
 
 test("Update article", async ({ request }) => {
-  const loginResponse: APIResponse = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
-    data: {
-      "user": {
-        "email": "api-test-user@test.com",
-        "password": "apitesting"
-      }
-    }
-  })
-  expect(loginResponse.status()).toBe(StatusCodes.OK);
-
-  const loginResponseBody: any = await loginResponse.json();
-  const authToken: string = loginResponseBody.user.token;
-
   const createdArticleResponse: APIResponse = await request.post('https://conduit-api.bondaracademy.com/api/articles/', {
     data: {
       "article": {
